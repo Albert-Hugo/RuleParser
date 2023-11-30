@@ -10,10 +10,12 @@ public class Parser {
     }
 
     public static void main(String[] args) {
-        Parser parser = new Parser("((((1==31) or (2==2)) or (1==2)) and 1==1)".toCharArray());
-//        Parser parser = new Parser("(2==2) and 1==1".toCharArray());
+//        Parser parser = new Parser("((1==2 or 1==1) and 1==3)".toCharArray());
+//        Parser parser = new Parser("((1==31 or 2==2) and 2==3)".toCharArray());
+        Parser parser = new Parser("((((( 1==31 or 2==2 ) or (1==2)) and 1==1) and 2==3) or 1==1)".toCharArray());
+//        Parser parser = new Parser("(2==2) and 1==2 and 1==1".toCharArray());
 //        Parser parser2 = new Parser("(1==1) or (2==2)".toCharArray());
-        boolean result = parser.expression();
+        boolean result = parser.expression(true);
 //        System.out.println(result);
 //       boolean result = parser2.expression();
         System.out.println(result);
@@ -32,55 +34,68 @@ public class Parser {
      *
      * @return
      */
-    public boolean expression() {
+    public boolean expression(boolean tracedResult) {
         String startT = getNextToken(true);
-        boolean braceResult = true;
-        if(startT.equals(")") && isEOF()){
+        if (isEOF()) {
             return true;
         }
+        boolean braceResult = true;
         if (startT.equals("(")) {
             if ('(' == previewNextChar()) {
-                braceResult = expression();
+                braceResult = expression(tracedResult);
+                String nextToken = getNextToken(true);
+                if ("and".equals(nextToken)) {
+                    ignoreWhiteSpace();
+                    return expression(braceResult) && braceResult;
+                }
+                if ("or".equals(nextToken)) {
+                    ignoreWhiteSpace();
+                    return expression(braceResult) || braceResult;
+                }
+                if (")".equals(nextToken)) {
+                    return expression(braceResult) && braceResult;
+                }
             } else {
-                braceResult = booleanExpression();
+                boolean currentBlockResult = true;
+                currentBlockResult = booleanExpression();
+                String nextToken = getNextToken(true);
+                if ("and".equals(nextToken)) {
+                    ignoreWhiteSpace();
+                    return expression(currentBlockResult) && currentBlockResult;
+                }
+                if ("or".equals(nextToken)) {
+                    ignoreWhiteSpace();
+                    return expression(currentBlockResult) || currentBlockResult;
+                }
+                if (")".equals(nextToken)) {
+                    return expression(currentBlockResult) && currentBlockResult;
+                }
             }
-            String t = getNextToken(true);
-            if (t.equals("and")) {
-                boolean r = expression() && braceResult;
-                System.out.println("composed result:"+r);
-                return r;
-            }
-            if (t.equals("or")) {
-                boolean r = expression() || braceResult;
-                System.out.println("composed result:"+r);
-            }
-            if (t.equals(")")) {
-                boolean r = expression() && braceResult;
-                System.out.println("composed result:"+r);
-                return r;
-            }
-        }
 
+        }
+//
         if ("and".equals(startT)) {
             ignoreWhiteSpace();
-            return expression() && braceResult;
+
+            return expression(tracedResult) && tracedResult;
         }
         if ("or".equals(startT)) {
             ignoreWhiteSpace();
-            return expression() || braceResult;
+            return expression(tracedResult) || tracedResult;
         }
         if (")".equals(startT)) {
-            return expression() && braceResult;
+            return expression(tracedResult) && tracedResult;
         }
         traceback(startT.length());
 
-        if(isEOF()){
-            return braceResult;
+        if (isEOF()) {
+            return true;
         }
         boolean firstResult = booleanExpression();
         ignoreWhiteSpace();
+        eat(')');
 
-        return braceResult && firstResult;
+        return firstResult;
     }
 
     public Object[] expressionDot() {
