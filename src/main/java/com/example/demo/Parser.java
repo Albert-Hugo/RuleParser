@@ -12,7 +12,7 @@ public class Parser {
     public static void main(String[] args) {
 //        Parser parser = new Parser("((1==2 or 1==1) and 1==3)".toCharArray());
 //        Parser parser = new Parser("((1==31 or 2==2) and 2==3)".toCharArray());
-        Parser parser = new Parser("((((( 1==31 or 2==2 ) or (1==2)) and 1==1) and 2==3) or 1==1)".toCharArray());
+        Parser parser = new Parser("((  ( ( ( ( 1==31 or 2==2 ) or (1==2)) and 1==1) and 2==3) or 1==1) and 2==3)".toCharArray());
 //        Parser parser = new Parser("(2==2) and 1==2 and 1==1".toCharArray());
 //        Parser parser2 = new Parser("(1==1) or (2==2)".toCharArray());
         boolean result = parser.expression(true);
@@ -43,33 +43,24 @@ public class Parser {
         if (startT.equals("(")) {
             if ('(' == previewNextChar()) {
                 braceResult = expression(tracedResult);
-                String nextToken = getNextToken(true);
-                if ("and".equals(nextToken)) {
-                    ignoreWhiteSpace();
-                    return expression(braceResult) && braceResult;
-                }
-                if ("or".equals(nextToken)) {
-                    ignoreWhiteSpace();
-                    return expression(braceResult) || braceResult;
-                }
-                if (")".equals(nextToken)) {
-                    return expression(braceResult) && braceResult;
-                }
+//                String nextToken = getNextToken(true);
+                return expression(braceResult);
             } else {
                 boolean currentBlockResult = true;
                 currentBlockResult = booleanExpression();
-                String nextToken = getNextToken(true);
-                if ("and".equals(nextToken)) {
-                    ignoreWhiteSpace();
-                    return expression(currentBlockResult) && currentBlockResult;
-                }
-                if ("or".equals(nextToken)) {
-                    ignoreWhiteSpace();
-                    return expression(currentBlockResult) || currentBlockResult;
-                }
-                if (")".equals(nextToken)) {
-                    return expression(currentBlockResult) && currentBlockResult;
-                }
+                return expression(currentBlockResult);
+//                String nextToken = getNextToken(true);
+//                if ("and".equals(nextToken)) {
+//                    ignoreWhiteSpace();
+//                    return expression(currentBlockResult) && currentBlockResult;
+//                }
+//                if ("or".equals(nextToken)) {
+//                    ignoreWhiteSpace();
+//                    return expression(currentBlockResult) || currentBlockResult;
+//                }
+//                if (")".equals(nextToken)) {
+//                    return expression(currentBlockResult) && currentBlockResult;
+//                }
             }
 
         }
@@ -93,7 +84,7 @@ public class Parser {
         }
         boolean firstResult = booleanExpression();
         ignoreWhiteSpace();
-        eat(')');
+//        eat(')');
 
         return firstResult;
     }
