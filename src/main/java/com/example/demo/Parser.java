@@ -10,9 +10,9 @@ public class Parser {
     }
 
     public static void main(String[] args) {
-//        Parser parser = new Parser("((1==2 or 1==1) and 1==3)".toCharArray());
+//        Parser parser = new Parser("(1!=3)".toCharArray());
 //        Parser parser = new Parser("((1==31 or 2==2) and 2==3)".toCharArray());
-        Parser parser = new Parser("(  ( ( ( ( 1==31 or 2==2 ) or (1==2)) and 1==1) and 2==3) or 1==1)".toCharArray());
+        Parser parser = new Parser("(  ( ( ( ( 1==31 or 2==2 ) or (1==2)) and 1==1) and 2==3) or 2==1)".toCharArray());
 //        Parser parser = new Parser("(2==2) and 1==2 and 1==1".toCharArray());
 //        Parser parser2 = new Parser("(1==1) or (2==2)".toCharArray());
         boolean result = parser.parse();
@@ -131,6 +131,10 @@ public class Parser {
             System.out.println(left + comOp + right + ":" + left.equals(right));
             return left.equals(right);
         }
+        if (comOp.equalsIgnoreCase("!=")) {
+            System.out.println(left + comOp + right + ":" + (!left.equals(right)));
+            return !left.equals(right);
+        }
 
         throw new IllegalStateException("Unexpected token :" + comOp);
 
@@ -194,7 +198,12 @@ public class Parser {
                 traceback(1);
                 return sb.toString();
             }
+            if (c == '!' && previewNextChar() == '=') {
+                sb.append(c);
+                sb.append(getNextChar());
+                return sb.toString();
 
+            }
             if (c == '=' && previewNextChar() == '=') {
                 sb.append(c);
                 sb.append(getNextChar());
@@ -208,7 +217,7 @@ public class Parser {
             }
             if (!isWhiteSpace(c)) {
                 sb.append(c);
-                if (previewNextChar() == '=') {
+                if (previewNextChar() == '=' || previewNextChar() == '!') {
                     return sb.toString();
                 }
                 continue;

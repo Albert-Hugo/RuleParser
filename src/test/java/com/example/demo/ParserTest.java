@@ -14,9 +14,17 @@ class ParserTest {
     }
 
     @Test
-    void getNextStr() {
+    void getNextToken() {
         Parser parser = new Parser(" fdsf ".toCharArray());
         String result = parser.getNextToken();
         Assertions.assertThat(result).isEqualTo("fdsf");
     }
+
+    @Test
+    void getNextToken_comOp() {
+        Parser parser = new Parser(" != ".toCharArray());
+        String result = parser.getNextToken();
+        Assertions.assertThat(result).isEqualTo("!=");
+    }
+
 }
