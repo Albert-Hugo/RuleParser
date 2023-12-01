@@ -9,44 +9,32 @@ public class Parser {
         this.code = code;
     }
 
-    public static void main(String[] args) {
-//        Parser parser = new Parser("(1!=3)".toCharArray());
-//        Parser parser = new Parser("((1==31 or 2==2) and 2==3)".toCharArray());
-        Parser parser = new Parser("(  ( ( ( ( 1==31 or 2==2 ) or (1==2)) and 1==1) and 2==3) or 2==1)".toCharArray());
-//        Parser parser = new Parser("(2==2) and 1==2 and 1==1".toCharArray());
-//        Parser parser2 = new Parser("(1==1) or (2==2)".toCharArray());
-        boolean result = parser.parse();
-//        System.out.println(result);
-//       boolean result = parser2.expression();
-        System.out.println(result);
-    }
 
-//    boolean blockExpression() {
-//        ignoreWhiteSpace();
-//        eat('(');
-//        logicComposedExpression();
-//        eat(')');
-//        return blockResult;
+
 //
-//    }
 
+    private void printLeftCodes(){
+        System.out.println(new String(this.code).substring(index));
+    }
     boolean logicExpression(boolean traceResult) {
         String logicOp = getNextToken(true);
         if (logicOp.equals(")") || logicOp.equals("(")) {
             //reaching the end or the start of another expression
+            System.out.println("reaching ( or )");
+            printLeftCodes();
             traceback(1);
             return traceResult;
         }
 
-        if (logicOp.equals("and")) {
-            traceResult = expression(traceResult) && traceResult;
-            return traceResult;
-        }
-        if (logicOp.equals("or")) {
-            traceResult = expression(traceResult) || traceResult;
-            return traceResult;
-        }
 
+        if (logicOp.equals("or")) {
+            traceResult = expression(true) || traceResult;
+            return traceResult;
+        }
+        if (logicOp.equals("and")) {
+            traceResult = expression(true) && traceResult;
+            return traceResult;
+        }
         throw new IllegalStateException("unexpected token:" + logicOp);
     }
 
@@ -68,7 +56,7 @@ public class Parser {
         String startToken = getNextToken(true);
         boolean finalResult = true;
         if (startToken.equals("(")) {
-            finalResult = expression(traceResult);
+            finalResult = expression(true);
             ignoreWhiteSpace();
             eat(')');
         } else {
@@ -78,11 +66,12 @@ public class Parser {
         }
 
         String token = getNextToken();
-        if (token.equals("and")) {
-            return expression(finalResult) && traceResult;
-        }
+
         if (token.equals("or")) {
-            return expression(finalResult) || traceResult;
+            return expression(true) || finalResult;
+        }
+        if (token.equals("and")) {
+            return expression(true) && finalResult;
         }
 
         return finalResult;
@@ -97,10 +86,6 @@ public class Parser {
         return result;
     }
 
-    boolean logicComposedExpression() {
-        boolean start = booleanExpression();
-        return logicExpression(start);
-    }
 
 
     public Object[] expressionDot() {
@@ -114,14 +99,6 @@ public class Parser {
         return new Object[]{null, booleanExpression()};
     }
 
-    public boolean braceExpression() {
-        eat('(');
-        boolean rtv = booleanExpression();
-        expressionDot();
-        eat(')');
-        return rtv;
-
-    }
 
     public boolean booleanExpression() {
         String left = id();
