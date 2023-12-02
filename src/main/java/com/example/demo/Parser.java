@@ -255,7 +255,7 @@ public class Parser {
         char c = getNextChar();
         while (isWhiteSpace(c)) {
             c = getNextChar();
-            if(isEOF()){
+            if (isEOF()) {
                 return;
             }
         }
@@ -380,7 +380,7 @@ public class Parser {
 
     String previewToken(int number) {
         setSavePoint();
-        StringBuilder result= new StringBuilder();
+        StringBuilder result = new StringBuilder();
         for (int i = 0; i < number; i++) {
             result.append(getNextToken(true));
         }
