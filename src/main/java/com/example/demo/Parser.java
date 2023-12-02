@@ -12,8 +12,12 @@ public class Parser {
     private Map<String, Object> env = new HashMap<>();
     private Map<String, String> context = new HashMap<>();
 
+    public int getIndex() {
+        return index;
+    }
+
     public Parser(char[] code) {
-        System.out.println(new String(code));
+//        System.out.println(new String(code));
         this.code = code;
     }
 
@@ -31,8 +35,8 @@ public class Parser {
         String logicOp = getNextToken(true);
         if (logicOp.equals(")") || logicOp.equals("(")) {
             //reaching the end or the start of another expression
-            System.out.println("reaching ( or )");
-            printLeftCodes();
+//            System.out.println("reaching ( or )");
+//            printLeftCodes();
             traceback(1);
             return traceResult;
         }
@@ -64,14 +68,14 @@ public class Parser {
      */
     public boolean expression(boolean traceResult) {
         ignoreWhiteSpace();
-        String startToken = getNextToken(true);
+        String startToken = previewNextToken(true);
         boolean finalResult = true;
         if (startToken.equals("(")) {
+            match("(");
             finalResult = expression(true);
-            ignoreWhiteSpace();
-            eat(')');
+            match(")");
         } else {
-            traceback(startToken.length());
+//            traceback(startToken.length());
             boolean startResult = booleanExpression();
             finalResult = logicExpression(startResult);
         }
@@ -109,18 +113,27 @@ public class Parser {
         return new Object[]{null, booleanExpression()};
     }
 
+    private Object getActualValueIfVariable(String token) {
+        if (isVariable(token)) {
+            return env.get(token);
+        }
+        return token;
+    }
+
 
     public boolean booleanExpression() {
         String left = id();
         String comOp = compOp();
         String right = id();
+        Object leftValue = getActualValueIfVariable(left);
+        Object rightValue = getActualValueIfVariable(right);
         if (comOp.equalsIgnoreCase("==")) {
-            System.out.println(left + comOp + right + ":" + left.equals(right));
-            return left.equals(right);
+//            System.out.println(left + comOp + right + ":" + left.equals(right));
+            return rightValue.equals(leftValue);
         }
         if (comOp.equalsIgnoreCase("!=")) {
-            System.out.println(left + comOp + right + ":" + (!left.equals(right)));
-            return !left.equals(right);
+//            System.out.println(left + comOp + right + ":" + (!left.equals(right)));
+            return !rightValue.equals(leftValue);
         }
 
         throw new IllegalStateException("Unexpected token :" + comOp);
@@ -240,17 +253,24 @@ public class Parser {
 
     void ignoreWhiteSpace() {
         char c = getNextChar();
-        while (isWhiteSpace(c) && !isEOF()) {
+        while (isWhiteSpace(c)) {
             c = getNextChar();
+            if(isEOF()){
+                return;
+            }
         }
         index--;
     }
 
     private void ifStatement() {
-        match("if");
-        match("{");
-        statement();
-        match("}");
+        match("if", false);
+        match("(");
+        if (expression(true)) {
+            match(")");
+            match("{");
+            statement();
+            match("}");
+        }
     }
 
 
@@ -265,6 +285,12 @@ public class Parser {
         }
     }
 
+    private void match(String expect, boolean special) {
+        String actual = getNextToken(special);
+        if (!expect.equals(actual)) {
+            throw new IllegalStateException("expect " + expect + " but get: " + actual);
+        }
+    }
 
     boolean isVariable(String token) {
         String regex = "^[a-zA-Z]\\w*$";
@@ -275,31 +301,27 @@ public class Parser {
 
 
     public void statement() {
+        ignoreWhiteSpace();
         if (isEOF()) {
             return;
         }
-        setSavePoint();
-        String startToken = getNextToken();
-        if (isVariable(startToken) && getNextToken().equals("=")) {
-            backToSavePoint();
+        String startToken = previewToken(2);
+        if (startToken.contains("=")) {
             assignment();
             statement();
             return;
         }
-        if (isVariable(startToken) && getNextToken(true).equals("(")) {
-            backToSavePoint();
+
+        if (startToken.startsWith("if(")) {
+            ifStatement();
+            statement();
+        }
+
+        if (!startToken.contains("if(") && startToken.contains("(")) {
             functionCall();
             match(";");
             statement();
             return;
-        }
-        switch (startToken) {
-            case "if":
-                traceback("if".length());
-                ifStatement();
-                break;
-            default:
-                throw new IllegalStateException("Unexpected token: " + startToken);
         }
 
 
@@ -311,12 +333,14 @@ public class Parser {
         match("(");
         switch (functionName) {
             case "print":
-                String param = getNextToken();
-                if (param.startsWith("\"") && param.endsWith("\"")) {
-                    System.out.println(param.substring(1, param.length() - 1));
+                String param = previewNextToken();
+                if (param.startsWith("\"")) {
+                    String wholeString = getWholeString();
+                    System.out.println(wholeString);
                     break;
                 }
                 if (env.get(param) != null) {
+                    param = getNextToken();
                     System.out.println(env.get(param));
                     break;
                 }
@@ -334,30 +358,57 @@ public class Parser {
         return rtv;
     }
 
+    private String getWholeString() {
+        StringBuilder result = new StringBuilder();
+        char t;
+        ignoreWhiteSpace();
+        eat('\"');
+        do {
+            t = getNextChar();
+            if (t != '\"') {
+                result.append(t);
+                continue;
+            }
+            return result.toString();
+        } while (true);
+
+    }
+
     private void backToSavePoint() {
         this.index = this.traceIndex;
     }
 
+    String previewToken(int number) {
+        setSavePoint();
+        StringBuilder result= new StringBuilder();
+        for (int i = 0; i < number; i++) {
+            result.append(getNextToken(true));
+        }
+        backToSavePoint();
+        return result.toString();
+    }
+
+
     String previewNextToken(boolean includeSpecial) {
+        setSavePoint();
         String token = getNextToken(includeSpecial);
-        traceback(token.length());
+        backToSavePoint();
         return token;
     }
 
     String previewNextToken() {
-        String token = getNextToken(false);
-        traceback(token.length());
-        return token;
+        return previewNextToken(false);
     }
 
     private void assignment() {
         String variable = getNextToken();
         match("=");
-        setSavePoint();
-        Object value = getNextToken();
-        if (previewNextToken(true).equals("(")) {
-            backToSavePoint();
+        String token = previewNextToken(true);
+        Object value = null;
+        if (token.contains("(")) {
             value = functionCall();
+        } else {
+            value = getNextToken();
         }
         //todo support local variable or not?
         this.env.put(variable, value);

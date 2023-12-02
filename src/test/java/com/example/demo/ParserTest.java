@@ -97,4 +97,28 @@ class ParserTest {
 //        Assertions.assertThat(result).isEqualTo("!=");
     }
 
+    @Test
+    void test_ifStatement() {
+        String code = "tag8 = getValue(8);\n" +
+                "if(tag8 == 4.4){\n" +
+                "print(\"version is 4.4\");\n" +
+                "}\t\n" +
+                "\n";
+        Parser parser = new Parser((code).toCharArray());
+
+        Map<String, String> contxt = new HashMap<>();
+        contxt.put("8", "4.4");
+        contxt.put("2", "20230211");
+        parser.setContext(contxt);
+        parser.statement();
+//        Assertions.assertThat(result).isEqualTo("!=");
+    }
+
+    @Test
+    public void test_previewToken() {
+        Parser parser = new Parser((" tag8 ").toCharArray());
+        String token = parser.previewNextToken();
+        Assertions.assertThat(token).isEqualTo("tag8");
+        Assertions.assertThat(parser.getIndex()).isEqualTo(0);
+    }
 }
