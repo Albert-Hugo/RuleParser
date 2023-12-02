@@ -63,5 +63,11 @@ class ParserTest {
         String result = parser.getNextToken();
         Assertions.assertThat(result).isEqualTo("!=");
     }
+  @Test
+    void statement_builtin_print() {
+        Parser parser = new Parser("print(\"data\");".toCharArray());
+        parser.statement();
+//        Assertions.assertThat(result).isEqualTo("!=");
+    }
 
 }

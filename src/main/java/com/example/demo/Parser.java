@@ -1,8 +1,14 @@
 package com.example.demo;
 
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class Parser {
     private final char[] code;
     private int index;
+    private int traceIndex;
+    private Map<String, String> env;
 
     public Parser(char[] code) {
         System.out.println(new String(code));
@@ -10,12 +16,12 @@ public class Parser {
     }
 
 
-
 //
 
-    private void printLeftCodes(){
+    private void printLeftCodes() {
         System.out.println(new String(this.code).substring(index));
     }
+
     boolean logicExpression(boolean traceResult) {
         String logicOp = getNextToken(true);
         if (logicOp.equals(")") || logicOp.equals("(")) {
@@ -85,7 +91,6 @@ public class Parser {
         eat(')');
         return result;
     }
-
 
 
     public Object[] expressionDot() {
@@ -236,14 +241,93 @@ public class Parser {
         index--;
     }
 
+    private void ifStatement() {
+        match("if");
+        match("{");
+        statement();
+        match("}");
+    }
+
 
     String getLeftString() {
         return new String(code).substring(index);
     }
 
+    private void match(String expect) {
+        String actual = getNextToken(true);
+        if (!expect.equals(actual)) {
+            throw new IllegalStateException("expect " + expect + " but get: " + actual);
+        }
+    }
+
+
+    boolean isVariable(String token) {
+        String regex = "^[a-zA-Z]\\w*$";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(token);
+        return matcher.matches();
+    }
+
 
     public void statement() {
+        setSavePoint();
+        String startToken = getNextToken();
+        if (isVariable(startToken) && getNextToken().equals("=")) {
+            backToSavePoint();
+            assignment();
+            return;
+        }
+        if (isVariable(startToken) && getNextToken(true).equals("(")) {
+            backToSavePoint();
+            functionCall();
+            return;
+        }
+        switch (startToken) {
+            case "if":
+                traceback("if".length());
+                ifStatement();
+                break;
+            default:
+                throw new IllegalStateException("Unexpected token: " + startToken);
+        }
 
+
+    }
+
+    private void functionCall() {
+        String functionName = getNextToken();
+        match("(");
+        switch (functionName) {
+            case "print":
+                String param = getNextToken();
+                System.out.println(param);
+                break;
+            default:
+                throw new IllegalStateException("Unexpected token");
+        }
+        match(")");
+        match(";");
+    }
+
+    private void backToSavePoint() {
+        this.index = this.traceIndex;
+    }
+
+    private void assignment() {
+        String variable = getNextToken();
+        match("=");
+        String value = getNextToken();
+        //todo support local variable or not?
+        setValue(variable, value);
+        match(";");
+    }
+
+    private void setValue(String variable, String value) {
+        this.env.put(variable, value);
+    }
+
+    private void setSavePoint() {
+        this.traceIndex = this.index;
     }
 
 
