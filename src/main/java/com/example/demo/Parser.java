@@ -194,10 +194,12 @@ public class Parser {
                 sb.append(c);
                 return sb.toString();
             }
+            //if not include special char, traceback index
             if (!specialToken && isSpecialChar(c)) {
                 traceback(1);
                 return sb.toString();
             }
+            //handle 2 char special chars
             if (c == '!' && previewNextChar() == '=') {
                 sb.append(c);
                 sb.append(getNextChar());
@@ -221,6 +223,8 @@ public class Parser {
                     return sb.toString();
                 }
                 continue;
+            } else {
+                traceback(1);
             }
             break;
         } while (true);
@@ -228,6 +232,12 @@ public class Parser {
 
     }
 
+    /**
+     * only for 1 char character
+     *
+     * @param c
+     * @return
+     */
     private boolean isSpecialChar(char c) {
         if (c == '(' || c == ')' || c == ';') {
             return true;
@@ -303,6 +313,10 @@ public class Parser {
     public void statement() {
         ignoreWhiteSpace();
         if (isEOF()) {
+            return;
+        }
+        String t = previewNextToken(true);
+        if (t.equals("}")) {
             return;
         }
         String startToken = previewToken(2);

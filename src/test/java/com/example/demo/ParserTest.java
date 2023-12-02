@@ -115,10 +115,54 @@ class ParserTest {
     }
 
     @Test
+    void test_nested_ifStatement() {
+        String code = "tag8 = getValue(8);\n" +
+                "tag2 = getValue(2);\n" +
+                "if(tag8 == 4.4){\n" +
+                "\tprint(\"version is not 4.4\");\n" +
+                "\tif(tag2 == 3){\n" +
+                "\t\tprint(\"heelo\");\n" +
+                "\t}\n" +
+                "\n" +
+                "\n" +
+                "\t\n" +
+                "}\t\n" +
+                "print(tag8);\n" +
+                "print(tag2);";
+        Parser parser = new Parser((code).toCharArray());
+
+        Map<String, String> contxt = new HashMap<>();
+        contxt.put("8", "4.4");
+        contxt.put("2", "3");
+        parser.setContext(contxt);
+        parser.statement();
+//        Assertions.assertThat(result).isEqualTo("!=");
+    }
+
+    @Test
     public void test_previewToken() {
         Parser parser = new Parser((" tag8 ").toCharArray());
         String token = parser.previewNextToken();
         Assertions.assertThat(token).isEqualTo("tag8");
         Assertions.assertThat(parser.getIndex()).isEqualTo(0);
+    }
+
+    @Test
+    public void getNextToken_without_special() {
+        Parser parser = new Parser((" tag8 ").toCharArray());
+        String token = parser.getNextToken();
+        Assertions.assertThat(token).isEqualTo("tag8");
+        Assertions.assertThat(parser.getIndex()).isEqualTo(5);
+    }
+
+    @Test
+    public void getNextToken_with_special() {
+        Parser parser = new Parser((" tag8( ").toCharArray());
+        String token = parser.getNextToken();
+        Assertions.assertThat(token).isEqualTo("tag8");
+        Assertions.assertThat(parser.getIndex()).isEqualTo(5);
+        token = parser.getNextToken(true);
+        Assertions.assertThat(token).isEqualTo("(");
+        Assertions.assertThat(parser.getIndex()).isEqualTo(6);
     }
 }
