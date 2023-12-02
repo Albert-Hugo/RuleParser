@@ -1,5 +1,6 @@
 package com.example.demo;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -8,7 +9,7 @@ public class Parser {
     private final char[] code;
     private int index;
     private int traceIndex;
-    private Map<String, String> env;
+    private Map<String, String> env = new HashMap<>();
 
     public Parser(char[] code) {
         System.out.println(new String(code));
@@ -211,7 +212,7 @@ public class Parser {
     }
 
     private boolean isSpecialChar(char c) {
-        if (c == '(' || c == ')') {
+        if (c == '(' || c == ')' || c == ';') {
             return true;
         }
         return false;
@@ -270,16 +271,21 @@ public class Parser {
 
 
     public void statement() {
+        if (isEOF()) {
+            return;
+        }
         setSavePoint();
         String startToken = getNextToken();
         if (isVariable(startToken) && getNextToken().equals("=")) {
             backToSavePoint();
             assignment();
+            statement();
             return;
         }
         if (isVariable(startToken) && getNextToken(true).equals("(")) {
             backToSavePoint();
             functionCall();
+            statement();
             return;
         }
         switch (startToken) {
@@ -300,7 +306,15 @@ public class Parser {
         switch (functionName) {
             case "print":
                 String param = getNextToken();
-                System.out.println(param);
+                if (param.startsWith("\"") && param.endsWith("\"")) {
+                    System.out.println(param.substring(1, param.length() - 1));
+                    break;
+                }
+                if (env.get(param) != null) {
+                    System.out.println(env.get(param));
+                    break;
+                }
+
                 break;
             default:
                 throw new IllegalStateException("Unexpected token");
