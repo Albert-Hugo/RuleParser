@@ -9,15 +9,19 @@ public class Parser {
     private final char[] code;
     private int index;
     private int traceIndex;
-    private Map<String, String> env = new HashMap<>();
+    private Map<String, Object> env = new HashMap<>();
+    private Map<String, String> context = new HashMap<>();
 
     public Parser(char[] code) {
         System.out.println(new String(code));
         this.code = code;
     }
 
+    public void setContext(Map<String, String> context) {
+        this.context = context;
+    }
 
-//
+    //
 
     private void printLeftCodes() {
         System.out.println(new String(this.code).substring(index));
@@ -285,6 +289,7 @@ public class Parser {
         if (isVariable(startToken) && getNextToken(true).equals("(")) {
             backToSavePoint();
             functionCall();
+            match(";");
             statement();
             return;
         }
@@ -300,7 +305,8 @@ public class Parser {
 
     }
 
-    private void functionCall() {
+    private Object functionCall() {
+        Object rtv = null;
         String functionName = getNextToken();
         match("(");
         switch (functionName) {
@@ -316,29 +322,48 @@ public class Parser {
                 }
 
                 break;
+            case "getValue":
+                String tag = getNextToken();
+                Integer.parseInt(tag);
+                rtv = context.get(tag);
+                break;
             default:
                 throw new IllegalStateException("Unexpected token");
         }
         match(")");
-        match(";");
+        return rtv;
     }
 
     private void backToSavePoint() {
         this.index = this.traceIndex;
     }
 
+    String previewNextToken(boolean includeSpecial) {
+        String token = getNextToken(includeSpecial);
+        traceback(token.length());
+        return token;
+    }
+
+    String previewNextToken() {
+        String token = getNextToken(false);
+        traceback(token.length());
+        return token;
+    }
+
     private void assignment() {
         String variable = getNextToken();
         match("=");
-        String value = getNextToken();
+        setSavePoint();
+        Object value = getNextToken();
+        if (previewNextToken(true).equals("(")) {
+            backToSavePoint();
+            value = functionCall();
+        }
         //todo support local variable or not?
-        setValue(variable, value);
+        this.env.put(variable, value);
         match(";");
     }
 
-    private void setValue(String variable, String value) {
-        this.env.put(variable, value);
-    }
 
     private void setSavePoint() {
         this.traceIndex = this.index;

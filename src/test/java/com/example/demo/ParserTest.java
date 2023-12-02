@@ -3,6 +3,9 @@ package com.example.demo;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
+import java.util.Map;
+
 class ParserTest {
 
     @Test
@@ -75,6 +78,21 @@ class ParserTest {
     void statement_assignment() {
         Parser parser = new Parser(("data = 1;\n" +
                 "print(data);").toCharArray());
+        parser.statement();
+//        Assertions.assertThat(result).isEqualTo("!=");
+    }
+
+    @Test
+    void getContxtValue() {
+        String code = "tag8 = getValue(8);\n" +
+                "        tag2 = getValue(2);\n" +
+                "        print(tag8);\n" +
+                "        print(tag2);";
+        Parser parser = new Parser((code).toCharArray());
+        Map<String, String> contxt = new HashMap<>();
+        contxt.put("8", "4.4");
+        contxt.put("2", "20230211");
+        parser.setContext(contxt);
         parser.statement();
 //        Assertions.assertThat(result).isEqualTo("!=");
     }
