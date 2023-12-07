@@ -30,12 +30,18 @@ class ParserTest {
 
     @Test
     void parse_nested_block() {
-        Parser parser = new Parser("(  ( ( ( ( 1==31 or 2==2 ) or (1==2)) and 1==1) and 2==3) or 2==1)".toCharArray());
-        boolean result = parser.parse();
-        Assertions.assertThat(result).isFalse();
-        Parser parser2 = new Parser("(  ( ( ( ( 1==31 or 2==2 ) or (1==2)) and 1==1) and 2==2) or 2==1)".toCharArray());
-        boolean result2 = parser2.parse();
-        Assertions.assertThat(result2).isTrue();
+        Object[][] prams = new Object[][]{
+                {"( ( 1==31 or 2==2 ) or (1==2)) ", true}
+                , {"( ( ( 1==31 or 2==2 ) or (1==2)) and 1==1)", true}
+                , {"( ( ( ( 1==31 or 2==2 ) or (1==2)) and 1==1) and 2==3) ", false}
+                , {"(  ( ( ( ( 1==31 or 2==2 ) or (1==2)) and 1==1) and 2==3) or 2==1)", false}
+        };
+        for (Object[] p : prams) {
+            Parser parser = new Parser(((String) p[0]).toCharArray());
+            boolean result = parser.parse();
+            Assertions.assertThat(result).isEqualTo(p[1]);
+        }
+
     }
 
     @Test
