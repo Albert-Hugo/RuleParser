@@ -80,14 +80,17 @@ public class Parser {
             finalResult = logicExpression(startResult);
         }
 
-        String token = getNextToken();
+        String token = previewNextToken();
 
         if (token.equals("or")) {
+            match("or");
             return expression(true) || finalResult;
         }
         if (token.equals("and")) {
+            match("and");
             return expression(true) && finalResult;
         }
+
 
         return finalResult;
     }
@@ -139,7 +142,7 @@ public class Parser {
     }
 
     public String id() {
-        String token = previewNextToken(true);
+        String token = previewToken(2);
         if (isFunctionalCall(token)) {
             return (String) functionCall();
         }
@@ -182,28 +185,31 @@ public class Parser {
     }
 
     String getNextToken(boolean specialToken) {
+        specialToken = false;
         ignoreWhiteSpace();
         char c;
         StringBuilder sb = new StringBuilder();
         do {
             c = getNextChar();
             //handle 2 char special chars
-            if (specialToken && isSpecialChar(c) && (previewNextChar() == '=')) {
+            if (isSpecialChar(c) && (previewNextChar() == '=')) {
                 sb.append(c);
                 sb.append(getNextChar());
                 break;
 
             }
 
-            if (specialToken && isSpecialChar(c)) {
-                sb.append(c);
-                break;
-            }
             //if not include special char, traceback index
-            if (!specialToken && isSpecialChar(c)) {
+            if (isSpecialChar(c) && !sb.toString().isEmpty()) {
                 traceback(1);
                 break;
             }
+
+            if (isSpecialChar(c)) {
+                sb.append(c);
+                break;
+            }
+
 
             if (!isWhiteSpace(c)) {
                 sb.append(c);
@@ -417,7 +423,7 @@ public class Parser {
     private void assignment() {
         String variable = getNextToken();
         match("=");
-        String token = previewNextToken(true);
+        String token = previewToken(2);
         Object value = null;
         if (token.contains("(")) {
             value = functionCall();
