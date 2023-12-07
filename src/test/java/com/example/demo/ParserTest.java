@@ -63,7 +63,7 @@ class ParserTest {
     @Test
     void getNextToken_comOp() {
         Parser parser = new Parser(" != ".toCharArray());
-        String result = parser.getNextToken(true);
+        String result = parser.getNextToken();
         Assertions.assertThat(result).isEqualTo("!=");
     }
 
@@ -204,7 +204,7 @@ class ParserTest {
         String token = parser.getNextToken();
         Assertions.assertThat(token).isEqualTo("tag8");
         Assertions.assertThat(parser.getIndex()).isEqualTo(5);
-        token = parser.getNextToken(true);
+        token = parser.getNextToken();
         Assertions.assertThat(token).isEqualTo("(");
         Assertions.assertThat(parser.getIndex()).isEqualTo(6);
     }

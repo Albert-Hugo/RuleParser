@@ -32,7 +32,7 @@ public class Parser {
     }
 
     boolean logicExpression(boolean traceResult) {
-        String logicOp = getNextToken(true);
+        String logicOp = getNextToken();
         if (logicOp.equals(")") || logicOp.equals("(")) {
             //reaching the end or the start of another expression
 //            System.out.println("reaching ( or )");
@@ -43,11 +43,11 @@ public class Parser {
 
 
         if (logicOp.equals("or")) {
-            traceResult = expression(true) || traceResult;
+            traceResult = expression() || traceResult;
             return traceResult;
         }
         if (logicOp.equals("and")) {
-            traceResult = expression(true) && traceResult;
+            traceResult = expression() && traceResult;
             return traceResult;
         }
         throw new IllegalStateException("unexpected token:" + logicOp);
@@ -66,16 +66,15 @@ public class Parser {
      *
      * @return
      */
-    public boolean expression(boolean traceResult) {
+    public boolean expression() {
         ignoreWhiteSpace();
-        String startToken = previewNextToken(true);
+        String startToken = previewNextToken();
         boolean finalResult = true;
         if (startToken.equals("(")) {
             match("(");
-            finalResult = expression(true);
+            finalResult = expression();
             match(")");
         } else {
-//            traceback(startToken.length());
             boolean startResult = booleanExpression();
             finalResult = logicExpression(startResult);
         }
@@ -84,11 +83,11 @@ public class Parser {
 
         if (token.equals("or")) {
             match("or");
-            return expression(true) || finalResult;
+            return expression() || finalResult;
         }
         if (token.equals("and")) {
             match("and");
-            return expression(true) && finalResult;
+            return expression() && finalResult;
         }
 
 
@@ -98,7 +97,7 @@ public class Parser {
     public boolean parse() {
         ignoreWhiteSpace();
         eat('(');
-        boolean result = expression(true);
+        boolean result = expression();
         ignoreWhiteSpace();
         eat(')');
         return result;
@@ -150,7 +149,7 @@ public class Parser {
     }
 
     public String compOp() {
-        String op = getNextToken(true);
+        String op = getNextToken();
         return op;
     }
 
@@ -181,11 +180,6 @@ public class Parser {
     }
 
     String getNextToken() {
-        return getNextToken(false);
-    }
-
-    String getNextToken(boolean specialToken) {
-        specialToken = false;
         ignoreWhiteSpace();
         char c;
         StringBuilder sb = new StringBuilder();
@@ -277,7 +271,7 @@ public class Parser {
     private void ifStatement() {
         match("if", false);
         match("(");
-        if (expression(true)) {
+        if (expression()) {
             match(")");
             match("{");
             statement();
@@ -291,14 +285,14 @@ public class Parser {
     }
 
     private void match(String expect) {
-        String actual = getNextToken(true);
+        String actual = getNextToken();
         if (!expect.equals(actual)) {
             throw new IllegalStateException("expect " + expect + " but get: " + actual);
         }
     }
 
     private void match(String expect, boolean special) {
-        String actual = getNextToken(special);
+        String actual = getNextToken();
         if (!expect.equals(actual)) {
             throw new IllegalStateException("expect " + expect + " but get: " + actual);
         }
@@ -317,7 +311,7 @@ public class Parser {
         if (isEOF()) {
             return;
         }
-        String t = previewNextToken(true);
+        String t = previewNextToken();
         if (t.equals("}")) {
             return;
         }
@@ -402,22 +396,18 @@ public class Parser {
         setSavePoint();
         StringBuilder result = new StringBuilder();
         for (int i = 0; i < number; i++) {
-            result.append(getNextToken(true));
+            result.append(getNextToken());
         }
         backToSavePoint();
         return result.toString();
     }
 
 
-    String previewNextToken(boolean includeSpecial) {
+    String previewNextToken() {
         setSavePoint();
-        String token = getNextToken(includeSpecial);
+        String token = getNextToken();
         backToSavePoint();
         return token;
-    }
-
-    String previewNextToken() {
-        return previewNextToken(false);
     }
 
     private void assignment() {
