@@ -139,8 +139,11 @@ public class Parser {
     }
 
     public String id() {
-        String token = getNextToken();
-        return token;
+        String token = previewNextToken(true);
+        if (isFunctionalCall(token)) {
+            return (String) functionCall();
+        }
+        return getNextToken();
     }
 
     public String compOp() {
@@ -324,7 +327,7 @@ public class Parser {
             statement();
         }
 
-        if (!startToken.contains("if(") && startToken.contains("(")) {
+        if (isFunctionalCall(startToken)) {
             functionCall();
             match(";");
             statement();
@@ -332,6 +335,10 @@ public class Parser {
         }
 
 
+    }
+
+    boolean isFunctionalCall(String token) {
+        return !token.contains("if(") && token.contains("(");
     }
 
     private Object functionCall() {

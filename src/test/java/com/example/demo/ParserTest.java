@@ -115,6 +115,18 @@ class ParserTest {
     }
 
     @Test
+    void test_function_in_expression() {
+        String code = "(getValue(8) == 4.4)";
+        Parser parser = new Parser((code).toCharArray());
+
+        Map<String, String> contxt = new HashMap<>();
+        contxt.put("8", "4.4");
+        contxt.put("2", "20230211");
+        parser.setContext(contxt);
+        Assertions.assertThat(parser.parse()).isTrue();
+    }
+
+    @Test
     void test_nested_ifStatement() {
         String code = "tag8 = getValue(8);\n" +
                 "tag2 = getValue(2);\n" +
@@ -156,12 +168,12 @@ class ParserTest {
     }
 
 
-
     @Test
     public void testIsStringValue() {
 
         Assertions.assertThat(Parser.isStringValue("\"value\"")).isTrue();
     }
+
     @Test
     public void testGetValueFromString() {
 
