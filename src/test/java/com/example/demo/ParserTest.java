@@ -63,7 +63,7 @@ class ParserTest {
     @Test
     void getNextToken_comOp() {
         Parser parser = new Parser(" != ".toCharArray());
-        String result = parser.getNextToken();
+        String result = parser.getNextToken(true);
         Assertions.assertThat(result).isEqualTo("!=");
     }
 
