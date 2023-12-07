@@ -114,7 +114,7 @@ class ParserTest {
 //        Assertions.assertThat(result).isEqualTo("!=");
     }
 
-//    @Test
+    @Test
     void test_elseStatement() {
         String code = "tag8 = getValue(8);\n" +
                 "if(tag8 == 4.4){\n" +

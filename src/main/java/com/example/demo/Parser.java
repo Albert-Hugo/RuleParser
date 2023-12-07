@@ -235,7 +235,7 @@ public class Parser {
      * @return
      */
     private boolean isSpecialChar(char c) {
-        if (c == '!' || c == '=' || c == '(' || c == ')' || c == ';') {
+        if (c == '/' || c == '*' || c == '-' || c == '+' || c == '}' || c == '{' || c == '!' || c == '=' || c == '(' || c == ')' || c == ';') {
             return true;
         }
         return false;
@@ -269,10 +269,18 @@ public class Parser {
     }
 
     private void ifStatement() {
-        match("if", false);
+        match("if");
         match("(");
-        if (expression()) {
+        boolean expressionResult = expression();
+        if (expressionResult) {
             match(")");
+            match("{");
+            statement();
+            match("}");
+        }
+        String token = previewToken(2);
+        if (token.equals("else{")) {
+            match("else");
             match("{");
             statement();
             match("}");
@@ -291,12 +299,6 @@ public class Parser {
         }
     }
 
-    private void match(String expect, boolean special) {
-        String actual = getNextToken();
-        if (!expect.equals(actual)) {
-            throw new IllegalStateException("expect " + expect + " but get: " + actual);
-        }
-    }
 
     boolean isVariable(String token) {
         String regex = "^[a-zA-Z]\\w*$";
