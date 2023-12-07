@@ -155,6 +155,19 @@ class ParserTest {
         Assertions.assertThat(parser.getIndex()).isEqualTo(5);
     }
 
+
+
+    @Test
+    public void testIsStringValue() {
+
+        Assertions.assertThat(Parser.isStringValue("\"value\"")).isTrue();
+    }
+    @Test
+    public void testGetValueFromString() {
+
+        Assertions.assertThat(Parser.getValueFromString("\"value\"")).isEqualTo("value");
+    }
+
     @Test
     public void getNextToken_with_special() {
         Parser parser = new Parser((" tag8( ").toCharArray());

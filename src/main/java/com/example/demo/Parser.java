@@ -102,20 +102,16 @@ public class Parser {
     }
 
 
-    public Object[] expressionDot() {
-        String logicOp = getNextToken();
-        if (logicOp.equals("and") || logicOp.equals("or")) {
-
-            boolean booleanResult = booleanExpression();
-            return new Object[]{logicOp, booleanResult};
-        }
-
-        return new Object[]{null, booleanExpression()};
-    }
 
     private Object getActualValueIfVariable(String token) {
-        if (isVariable(token)) {
+        if (isVariable(token) && env.get(token)!=null) {
             return env.get(token);
+        }
+        return token;
+    }
+   private String getActualValueIfString(String token) {
+        if (isStringValue(token)) {
+            return getValueFromString(token);
         }
         return token;
     }
@@ -125,6 +121,8 @@ public class Parser {
         String left = id();
         String comOp = compOp();
         String right = id();
+        left = getActualValueIfString(left);
+        right = getActualValueIfString(right);
         Object leftValue = getActualValueIfVariable(left);
         Object rightValue = getActualValueIfVariable(right);
         if (comOp.equalsIgnoreCase("==")) {
@@ -192,35 +190,41 @@ public class Parser {
 //            }
             if (specialToken && isSpecialChar(c)) {
                 sb.append(c);
-                return sb.toString();
+                break;
+//                return sb.toString();
             }
             //if not include special char, traceback index
             if (!specialToken && isSpecialChar(c)) {
                 traceback(1);
-                return sb.toString();
+                break;
+//                return sb.toString();
             }
             //handle 2 char special chars
             if (c == '!' && previewNextChar() == '=') {
                 sb.append(c);
                 sb.append(getNextChar());
-                return sb.toString();
+                break;
+//                return sb.toString();
 
             }
             if (c == '=' && previewNextChar() == '=') {
                 sb.append(c);
                 sb.append(getNextChar());
-                return sb.toString();
+                break;
+//                return sb.toString();
 
             }
             if (c == '=') {
                 sb.append(c);
-                return sb.toString();
+                break;
+//                return sb.toString();
 
             }
             if (!isWhiteSpace(c)) {
                 sb.append(c);
                 if (previewNextChar() == '=' || previewNextChar() == '!') {
-                    return sb.toString();
+                    break;
+//                    return sb.toString();
                 }
                 continue;
             } else {
@@ -228,8 +232,21 @@ public class Parser {
             }
             break;
         } while (true);
-        return sb.toString();
+        //handle String value
+        String result = sb.toString();
+//        if(result.startsWith("\"") && result.endsWith("\"")){
+//            return result.substring(1,result.length()-1);
+//        }
+        return result;
 
+    }
+
+    static boolean isStringValue(String token){
+        return token.startsWith("\"") && token.endsWith("\"");
+    }
+
+    static String getValueFromString(String token){
+        return token.substring(1,token.length()-1);
     }
 
     /**
