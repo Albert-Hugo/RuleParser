@@ -35,8 +35,6 @@ public class Parser {
         String logicOp = getNextToken();
         if (logicOp.equals(")") || logicOp.equals("(")) {
             //reaching the end or the start of another expression
-//            System.out.println("reaching ( or )");
-//            printLeftCodes();
             traceback(1);
             return traceResult;
         }
@@ -120,7 +118,20 @@ public class Parser {
 
 
     public boolean booleanExpression() {
-        String left = id();
+        String startToken = previewToken(2);
+        String left = "";
+        //fix for not boolean expression call
+        if (isFunctionalCall(startToken)) {
+            Object rtv = functionCall();
+            if (rtv instanceof Boolean) {
+                return (boolean) rtv;
+            }
+
+            left = (String) rtv;
+        } else {
+            left = id();
+        }
+
         String comOp = compOp();
         String right = id();
         left = getActualValueIfString(left);
@@ -235,7 +246,7 @@ public class Parser {
      * @return
      */
     private boolean isSpecialChar(char c) {
-        if (c == '/' || c == '*' || c == '-' || c == '+' || c == '}' || c == '{' || c == '!' || c == '=' || c == '(' || c == ')' || c == ';') {
+        if (c == ',' || c == '/' || c == '*' || c == '-' || c == '+' || c == '}' || c == '{' || c == '!' || c == '=' || c == '(' || c == ')' || c == ';') {
             return true;
         }
         return false;
@@ -272,11 +283,13 @@ public class Parser {
         match("if");
         match("(");
         boolean expressionResult = expression();
+        match(")");
+        match("{");
         if (expressionResult) {
-            match(")");
-            match("{");
             statement();
             match("}");
+        } else {
+            skipUntil("}");
         }
         String token = previewToken(2);
         if (token.equals("else{")) {
@@ -285,6 +298,14 @@ public class Parser {
             statement();
             match("}");
         }
+        statement();
+    }
+
+    private void skipUntil(String expect) {
+        String c;
+        do {
+            c = getNextToken();
+        } while (!c.equals(expect));
     }
 
 
@@ -366,6 +387,14 @@ public class Parser {
                 String tag = getNextToken();
                 Integer.parseInt(tag);
                 rtv = context.get(tag);
+                break;
+            case "find":
+                String source = id();
+                source = getActualValueIfVariable(source).toString();
+                match(",");
+                String target = id();
+                target = getActualValueIfString(target);
+                rtv = source.contains(target);
                 break;
             default:
                 throw new IllegalStateException("Unexpected token");
