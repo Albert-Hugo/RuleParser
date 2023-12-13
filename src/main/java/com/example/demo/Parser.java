@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 
 public class Parser {
     private final char[] code;
+    private int line;
     private int index;
     private int traceIndex;
     private Map<String, Object> env = new HashMap<>();
@@ -265,6 +266,9 @@ public class Parser {
     }
 
     private boolean isWhiteSpace(char c) {
+        if (c == '\n') {
+            line++;
+        }
         return c == ' ' || c == '\n' || c == '\t';
     }
 
@@ -316,7 +320,7 @@ public class Parser {
     private void match(String expect) {
         String actual = getNextToken();
         if (!expect.equals(actual)) {
-            throw new IllegalStateException("expect " + expect + " but get: " + actual);
+            throw new IllegalStateException("expect " + expect + " but get: " + actual + " at line:" + this.line);
         }
     }
 
