@@ -368,10 +368,11 @@ public class Parser {
         return !token.contains("if(") && token.contains("(");
     }
 
-    private Object functionCall() {
+    Object functionCall() {
         Object rtv = null;
         String functionName = getNextToken();
         match("(");
+        System.out.println("calling function: " + functionName);
         switch (functionName) {
             case "print":
                 String param = previewNextToken();

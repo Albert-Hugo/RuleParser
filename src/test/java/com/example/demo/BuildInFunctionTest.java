@@ -1,5 +1,6 @@
 package com.example.demo;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -8,6 +9,18 @@ import java.util.Map;
 public class BuildInFunctionTest {
     @Test
     void test_find() {
+        String code = "find(\"4.4\",\"4\");";
+        Parser parser = new Parser((code).toCharArray());
+        boolean result = (boolean) parser.functionCall();
+        Assertions.assertThat(result).isTrue();
+        code = "find(\"4.4\",\"3\");";
+        parser = new Parser((code).toCharArray());
+        result = (boolean) parser.functionCall();
+        Assertions.assertThat(result).isFalse();
+    }
+
+    @Test
+    void test_find_in_code() {
         String code = "tag8 = getValue(8);\n" +
                 "tag2 = getValue(2);\n" +
                 "if(find(tag8,4)){\n" +
@@ -26,6 +39,7 @@ public class BuildInFunctionTest {
         parser.statement();
 //        Assertions.assertThat(result).isEqualTo("!=");
     }
+
 
     @Test
     void test_function_with_other_expression() {

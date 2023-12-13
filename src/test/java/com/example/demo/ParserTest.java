@@ -123,15 +123,15 @@ class ParserTest {
     @Test
     void test_nested_function_call() {
         String code = "tag8=4;\n" +
-                "if(find(getValue(8),\"4\")){\n" +
-                "\tprint(\"version is not 4.4\");\t\n" +
+                "if(find(getValue(2),getValue(8))){\n" +
+                "\tprint(\"tag2 contains tag8\");\t\n" +
                 "}\t\n" +
-                "print(tag8);\n" ;
+                "print(tag8);\n";
         Parser parser = new Parser((code).toCharArray());
 
         Map<String, String> contxt = new HashMap<>();
-        contxt.put("8", "4.4");
         contxt.put("2", "20230211");
+        contxt.put("8", "2");
         parser.setContext(contxt);
         parser.statement();
 //        Assertions.assertThat(result).isEqualTo("!=");
