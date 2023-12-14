@@ -138,6 +138,29 @@ class ParserTest {
     }
 
     @Test
+    void test_elseIfStatement() {
+        String code = "tag8 = getValue(8);\n" +
+                "if(tag8 == 4.4){\n" +
+                "print(\"version is 4.4\");\n" +
+                " }elseIf(tag8 == 4.3){" +
+                "print(\"version is 4.3\");\n" +
+                "}elseIf(tag8 == 4.2){" +
+                " print(\"version is 4.2\");\n" +
+                "" +
+                "}else{" +
+                " print(\"unknown version!\");" +
+                "}\t\n" +
+                "\n";
+        Parser parser = new Parser((code).toCharArray());
+
+        Map<String, String> contxt = new HashMap<>();
+        contxt.put("8", "4");
+        parser.setContext(contxt);
+        parser.statement();
+//        Assertions.assertThat(result).isEqualTo("!=");
+    }
+
+    @Test
     void test_elseStatement() {
         String code = "tag8 = getValue(8);\n" +
                 "if(tag8 == 4.4){\n" +

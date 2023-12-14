@@ -283,6 +283,36 @@ public class Parser {
         index--;
     }
 
+    private void elseIfStatement() {
+        match("elseIf");
+        match("(");
+        boolean expressionResult = expression();
+        match(")");
+        if (expressionResult) {
+            match("{");
+            statement();
+            match("}");
+        } else {
+            skipUntil("}");
+        }
+        String nextToken = previewToken(2);
+        if (nextToken.equals("elseIf(")) {
+            elseIfStatement();
+        }
+
+
+    }
+
+    private void elseStatement() {
+        String token = previewToken(2);
+        if (token.equals("else{")) {
+            match("else");
+            match("{");
+            statement();
+            match("}");
+        }
+    }
+
     private void ifStatement() {
         match("if");
         match("(");
@@ -296,12 +326,10 @@ public class Parser {
             skipUntil("}");
         }
         String token = previewToken(2);
-        if (token.equals("else{")) {
-            match("else");
-            match("{");
-            statement();
-            match("}");
+        if (token.equals("elseIf(")) {
+            elseIfStatement();
         }
+        elseStatement();
         statement();
     }
 
