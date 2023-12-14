@@ -330,7 +330,6 @@ public class Parser {
             elseIfStatement();
         }
         elseStatement();
-        statement();
     }
 
     private void skipUntil(String expect) {
