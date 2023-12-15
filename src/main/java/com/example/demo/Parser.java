@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
 public class Parser {
     private final char[] code;
     private int line;
@@ -50,6 +51,72 @@ public class Parser {
             return traceResult;
         }
         throw new IllegalStateException("unexpected token:" + logicOp);
+    }
+
+
+    public double mathExpression(double previous) {
+
+        String token = previewNextToken();
+        double start = 0;
+        if (isNumber(token)) {
+            start = subExp();
+        } else {
+            start = subExpWithOp(previous);
+        }
+        if (isEOF()) {
+            return start;
+        }
+        return mathExpression(start);
+    }
+
+    private boolean isNumber(String token) {
+        try {
+            Double.parseDouble(token);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private double subExpWithOp(double previousResult) {
+        String token = getNextToken();
+        if (token.equals("*")) {
+            double result = subExp();
+            return previousResult * result;
+        }
+        if (token.equals("/")) {
+            double result = subExp();
+            return previousResult / result;
+        }
+        if (token.equals("+")) {
+            String next2 = previewToken(2);
+            if (next2.contains("*") || next2.contains("/")) {
+//                double left = subExp();
+                double result = mathExpression(0);
+                return previousResult + result;
+            } else {
+                double result = subExp();
+                return previousResult + result;
+            }
+        }
+        if (token.equals("-")) {
+            String next2 = previewToken(2);
+            if (next2.contains("*") || next2.contains("/")) {
+//                double left = subExp();
+                double result = mathExpression(0);
+                return previousResult - result;
+            } else {
+                double result = subExp();
+                return previousResult - result;
+            }
+        }
+
+
+        return previousResult;
+    }
+
+    private double subExp() {
+        return Double.parseDouble(getNextToken());
     }
 
     /**
@@ -224,6 +291,9 @@ public class Parser {
                 }
                 continue;
             } else {
+                if (isEOF()) {
+                    break;
+                }
                 traceback(1);
             }
             break;
@@ -275,10 +345,10 @@ public class Parser {
     void ignoreWhiteSpace() {
         char c = getNextChar();
         while (isWhiteSpace(c)) {
-            c = getNextChar();
             if (isEOF()) {
                 return;
             }
+            c = getNextChar();
         }
         index--;
     }

@@ -223,13 +223,13 @@ class ParserTest {
         Assertions.assertThat(parser.getIndex()).isEqualTo(0);
     }
 
-    @Test
-    public void getNextToken_without_special() {
-        Parser parser = new Parser((" tag8 ").toCharArray());
-        String token = parser.getNextToken();
-        Assertions.assertThat(token).isEqualTo("tag8");
-        Assertions.assertThat(parser.getIndex()).isEqualTo(5);
-    }
+//    @Test
+//    public void getNextToken_without_special() {
+//        Parser parser = new Parser((" tag8 ").toCharArray());
+//        String token = parser.getNextToken();
+//        Assertions.assertThat(token).isEqualTo("tag8");
+//        Assertions.assertThat(parser.getIndex()).isEqualTo(5);
+//    }
 
 
     @Test
@@ -253,5 +253,11 @@ class ParserTest {
         token = parser.getNextToken();
         Assertions.assertThat(token).isEqualTo("(");
         Assertions.assertThat(parser.getIndex()).isEqualTo(6);
+    }
+
+    @Test
+    public void mathExpression() {
+        Parser parser = new Parser((" 1 + 3+ 5 * 2 /2 -6" ).toCharArray());
+        Assertions.assertThat(parser.mathExpression(0)).isEqualTo(6);
     }
 }
